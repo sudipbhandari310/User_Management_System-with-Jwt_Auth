@@ -1,0 +1,38 @@
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const { checkIfEmailExists, insertUser } = require('../models/userModel');
+
+const register = async (req, res) => {
+  const { email, password } = req.body;
+
+  //validate incoming request
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  //check if email already exists
+  const present = await checkIfEmailExists(email);
+  if (present) {
+    return res.json({ message: 'Email already exists' });
+  }
+  //hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const data = {
+    name: req.body.name,
+    email: req.body.email,
+    password: hashedPassword,
+  };
+
+  //insert new user in db
+  const user = await insertUser(data);
+  if (user) {
+    return res
+      .status(200)
+      .json({ message: 'Registration Successful', result: user });
+  } else {
+    return res.status(500).json({ message: 'Error in registration' });
+  }
+};
+
+module.exports = { register };
