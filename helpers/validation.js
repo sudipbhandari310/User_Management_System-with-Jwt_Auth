@@ -1,4 +1,4 @@
-const {check} = require('express-validator');
+const { check } = require('express-validator');
 
 const signUpValidation = [
   check('name', 'Name is required ').not().isEmpty(),
@@ -8,4 +8,11 @@ const signUpValidation = [
   check('password', 'Password is required ').isLength({ min: 6 }),
 ];
 
-module.exports = { signUpValidation };
+const loginValidation = [
+  check('email', 'Email is required ')
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: true }),
+  check('password', 'Password is required ').isLength({ min: 6 }),
+];
+
+module.exports = { signUpValidation, loginValidation };

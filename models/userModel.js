@@ -8,7 +8,11 @@ const checkIfEmailExists = async (email) => {
       if (err) {
         return reject(err);
       }
-      resolve(results.length > 0);
+      if (results.length > 0) {
+        resolve(results[0]);
+      } else {
+        resolve(null);
+      }
     });
   });
 };
@@ -20,9 +24,9 @@ const insertUser = async (data) => {
 
     db.query(query, values, (err, results) => {
       if (err) {
-        return reject(err); // Reject the promise if there's an error
+        return reject(err);
       }
-      resolve(results); // Resolve the promise with the result
+      resolve(results);
     });
   });
 };
