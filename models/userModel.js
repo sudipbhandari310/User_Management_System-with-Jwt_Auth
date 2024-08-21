@@ -31,4 +31,23 @@ const insertUser = async (data) => {
   });
 };
 
-module.exports = { checkIfEmailExists, insertUser };
+
+const profileById = async(userId)=>{
+  return new Promise((resolve, reject) => { // Wrap the db.query in a Promise
+    const query = 'SELECT * FROM user WHERE id = ?';
+
+    db.query(query, [userId], (err, results) => {
+      if (err) {
+        return reject(err); // Reject the promise with the error if one occurs
+      }
+      if (results.length > 0) {
+        resolve(results[0]); // Resolve the promise with the user data
+      } else {
+        resolve(null); // No user found, resolve with null
+      }
+    });
+  });
+
+
+}
+module.exports = { checkIfEmailExists, insertUser,profileById };

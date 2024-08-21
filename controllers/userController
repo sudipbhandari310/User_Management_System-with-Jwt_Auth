@@ -1,7 +1,12 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const db = require('../config/dbConnector');
-const { checkIfEmailExists, insertUser } = require('../models/userModel');
+const {
+  checkIfEmailExists,
+  insertUser,
+  profileById,
+} = require('../models/userModel');
+const { jwtAuthMiddleware, generateToken } = require('../helpers/jwt');
 const randomString = require('randomstring');
 const sendMail = require('../helpers/sendMail');
 const jwt = require('jsonwebtoken');
@@ -69,8 +74,7 @@ const login = async (req, res) => {
 
   //check if email exists in db
   const user = await checkIfEmailExists(email);
-  // console.log('User:', user);
-  // console.log('User Password:', user ? user.password : 'No user found');
+
   if (!user) {
     return res.status(404).json({ message: 'Invalid username or password' });
   }
@@ -81,22 +85,32 @@ const login = async (req, res) => {
     return res.status(400).json({ message: 'Invalid password' });
   }
 
-  //generate jwt token
+  //generate token
 
-  const token = jwt.sign(
-    {
-      id: user.id,
-      is_admin: user.is_admin,
-    },
-    process.env.SECRET_KEY,
-    { expiresIn: '1h' }
-  );
-  //return successful
-  return res.status(200).json({
-    message: 'Login Successfull',
+  const token = generateToken({
+    id: user.id,
+    email: user.email,
+  });
+  // console.log('Token is :', token);
+  return res.status(400).json({
+    message: 'Login Successful',
+    result: user,
     token: token,
-    is_admin: user.is_admin,
   });
 };
 
-module.exports = { register, login };
+const getProfile = async (req, res) => {
+  // const userData = req.user;
+  // console.log(userData);
+  console.log('Inside Profile');
+  console.log(req.userData);
+  const userId = req.userData.id;
+  const userProfile = await profileById(userId);
+  if (userProfile) {
+    return res
+      .status(200)
+      .json({ message: 'Profile Found', result: userProfile });
+  }
+};
+
+module.exports = { register, login, getProfile };
